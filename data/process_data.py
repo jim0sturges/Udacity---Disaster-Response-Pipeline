@@ -1,16 +1,49 @@
 import sys
-
+import pandas as pd
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
+    messages = pd.read_csv('data/disaster_messages.csv')
+    categories = pd.read_csv('data/disaster_categories.csv')
+    df = messages.merge(categories, how = 'left', on = ['id'])
+    return(df)
+
 
 
 def clean_data(df):
-    pass
-
+    categories = df['categories'].str.split(';', expand = True)
+    # select the first row of the categories dataframe
+    row = categories.iloc[0]
+    # use this row to extract a list of new column names for categories.
+    # one way is to apply a lambda function that takes everything 
+    # up to the second to last character of each string with slicing
+    category_colnames = row.transform(lambda x: x[:-2]).tolist()
+    
+    # rename the columns of `categories`
+    categories.columns = category_colnames
+    
+    #Convert category values to just numbers 0 or 1
+    for column in categories:
+    # set each value to be the last character of the string & covert to numeric
+        categories[column] = categories[column].str[-1].astype('int')
+    
+    #drop categories column
+    df=df.drop('categories', axis = 1)
+    
+    # concatenate the original dataframe with the new `categories` dataframe
+    df = pd.concat([df, categories], axis = 1)
+    
+    # drop duplicates
+    df=df.drop_duplicates()
+    
+    return(df)
+  
 
 def save_data(df, database_filename):
-    pass  
+    from sqlalchemy import create_engine
+    engine = create_engine('sqlite:///DisasterResponse.db')
+    df.to_sql('messages', engine, index=False, if_exists='replace')
+    return
 
 
 def main():
@@ -20,6 +53,7 @@ def main():
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
               .format(messages_filepath, categories_filepath))
+        
         df = load_data(messages_filepath, categories_filepath)
 
         print('Cleaning data...')
