@@ -113,7 +113,7 @@ def index():
                 'layout': {
                     'title': 'Top Categories',
                     'yaxis': {
-                        'title': ""
+                        #'title': ""
                     },
                     'xaxis': {
                         'title': "Count"
