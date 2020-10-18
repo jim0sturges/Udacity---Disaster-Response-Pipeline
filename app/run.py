@@ -58,24 +58,27 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
-    top_5_cat_cnt = df.iloc[:,4:].sum().sort_values(ascending=False)[1:5]
+    #Top 5 Catigories
+    top_5_cat_cnt = df.iloc[:,4:].sum().sort_values(ascending=False).head(5)
     top_5_cat_nm = list(top_5_cat_cnt.index)
-    spaced_list=[]
-    for nm in top_5_cat_nm:
-        spaced_list.append(nm+" ")
-    top_5_cat_nm=spaced_list
+
+    #Bottom 5 catigories
+    bottom_5_cat=df.iloc[:,4:].sum().sort_values(ascending=True).head(5)
+    bottom_5_cat_names=genre_names = list(bottom_5_cat.index)
+
     
-    words=[]; mess1=[]
-    mess_list=df['message'].tolist()
-    for mess in mess_list:
-        mess=tokenize(mess)
-        words.extend(mess)
-    counter = collections.Counter(words)
-    top_words_counter = counter.most_common(10)   
-    top_words_dict=dict(top_words_counter)
-    top_words_key=list(top_words_dict.keys())
-    top_words_value=list(top_words_dict.values())   
-    
+    # Analysis of most common word counts
+    word_list=[]; 
+    message_list=df['message'].tolist()
+    for message in message_list:
+        t_mess=tokenize(message)
+        word_list.extend(t_mess)
+    counter = collections.Counter(word_list)
+    twenty_most_common_words_dict = dict(counter.most_common(20))   
+    twenty_most_common_words_key=list(twenty_most_common_words_dict.keys())
+    twenty_most_common_words_value=list(twenty_most_common_words_dict.values())  
+
+   
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -117,41 +120,41 @@ def index():
                     }
                 }
             },
-        {
-                'data': [
-                    Bar(
-                        x=top_5_cat_cnt,
-                        y=top_5_cat_nm,
-                        orientation='h'
-                       
-                    )
-                ],
 
-                'layout': {
-                    'title': 'Top Categories',
-                    'yaxis': {
-                        'title': ""
-                    },
-                    'xaxis': {
-                        'title': "Count"
-                    }
-                }
-            },
         {
             'data': [
                 Bar(
-                    x=top_words_key,
-                    y=top_words_value
+                    x=bottom_5_cat,
+                    y=bottom_5_cat_names,
+                    orientation='h'
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Bottom Categories',
+                'yaxis': {
+                    'title': ""
+                },
+                'xaxis': {
+                    'title': "Count"
+                }
+            }
+        },
+      {
+            'data': [
+                Bar(
+                    x=twenty_most_common_words_key,
+                    y=twenty_most_common_words_value
+                )
+            ],
+
+            'layout': {
+                'title': "Distribution of Top 20 Word Counts",
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Word"
                 }
             }
         }
